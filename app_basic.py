@@ -19,6 +19,10 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_google_genai.chat_models import (
+    GoogleRateLimitError,
+    GoogleAPIError,
+)
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 from langchain_core.output_parsers import StrOutputParser
@@ -90,9 +94,10 @@ def criar_chain_agente(banco_vetores):
 
     buscador_contexto = banco_vetores.as_retriever()
 
-    # alias "latest": aponta sempre para o Gemini Flash atual, evitando quebra
-    # quando uma versão específica é descontinuada pela Google
-    llm = ChatGoogleGenerativeAI(model="gemini-flash-latest")
+    # alias "lite latest": aponta sempre para o Gemini Flash-Lite atual — modelo
+    # mais leve, com cota gratuita maior, e sem quebrar quando uma versão
+    # específica é descontinuada pela Google
+    llm = ChatGoogleGenerativeAI(model="gemini-flash-lite-latest")
 
     # junta o conteúdo dos blocos recuperados em um único texto de contexto
     def formatar_docs(docs):
@@ -157,7 +162,21 @@ if prompt :
 
     with st.chat_message("assistant"):
         with st.spinner("Buscando..."):
-            resultado = chain.invoke(prompt)
+            try:
+                resultado = chain.invoke(prompt)
+            except GoogleRateLimitError:
+                st.warning(
+                    "⚠️ A cota gratuita da API do Gemini foi atingida por hoje. "
+                    "Tente novamente mais tarde ou use sua própria chave de API."
+                )
+                st.stop()
+            except GoogleAPIError:
+                st.error(
+                    "❌ A API do Gemini está temporariamente indisponível. "
+                    "Tente novamente em alguns instantes."
+                )
+                st.stop()
+
             answer = resultado["answer"]
             docs_fonte = resultado["docs"]
             st.write(answer)
