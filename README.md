@@ -4,12 +4,13 @@
 ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white)
 ![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?logo=langchain&logoColor=white)
 ![Google Gemini](https://img.shields.io/badge/Google%20Gemini-8E75B2?logo=googlegemini&logoColor=white)
+[![Demo ao vivo](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://estudoagenterh.streamlit.app)
 
 Assistente conversacional que responde perguntas sobre as **políticas internas de RH** de uma empresa. Usa **RAG (Retrieval-Augmented Generation)**: as respostas são geradas por um LLM, mas **apenas com base no conteúdo de um PDF** — evitando "invenções" fora do documento e sempre citando os trechos que embasaram a resposta.
 
 ### 🔗 Demo ao vivo
 
-**👉 [Acesse a demo](https://SEU-APP.streamlit.app)** _(substitua pela URL do seu app no Streamlit Cloud)_
+**👉 [Acesse a demo](https://estudoagenterh.streamlit.app)**
 
 <!-- Salve um print do app respondendo em docs/screenshot.png para ele aparecer aqui -->
 ![Demonstração do app](docs/screenshot.png)
