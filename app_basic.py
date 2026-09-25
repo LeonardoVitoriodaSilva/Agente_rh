@@ -94,10 +94,7 @@ def criar_chain_agente(banco_vetores):
 
     buscador_contexto = banco_vetores.as_retriever()
 
-    # alias "lite latest": aponta sempre para o Gemini Flash-Lite atual — modelo
-    # mais leve, com cota gratuita maior, e sem quebrar quando uma versão
-    # específica é descontinuada pela Google
-    llm = ChatGoogleGenerativeAI(model="gemini-flash-lite-latest")
+    llm = ChatGoogleGenerativeAI(model="gemini-3.7-flash")
 
     # junta o conteúdo dos blocos recuperados em um único texto de contexto
     def formatar_docs(docs):
