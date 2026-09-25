@@ -94,17 +94,26 @@ def criar_chain_agente(banco_vetores):
 
     buscador_contexto = banco_vetores.as_retriever()
 
-    # Modelo principal: gemini-3.7-flash. Como ele tem alta demanda (503 frequente)
-    # e cota gratuita baixa (429), o with_retry reenvia nos 503 temporários e o
-    # with_fallbacks troca para um modelo mais estável quando o principal falha,
-    # garantindo que a demo sempre responda.
-    modelo_principal = ChatGoogleGenerativeAI(model="gemini-3.7-flash").with_retry(
-        retry_if_exception_type=(GoogleAPIError,),
-        wait_exponential_jitter=True,
-        stop_after_attempt=3,
-    )
-    modelo_reserva = ChatGoogleGenerativeAI(model="gemini-flash-lite-latest")
-    llm = modelo_principal.with_fallbacks([modelo_reserva])
+    # Cadeia de modelos para maximizar a disponibilidade no tier gratuito.
+    # Cada modelo tem sua própria cota diária (~20/dia); ao esgotar a cota (429)
+    # ou em caso de sobrecarga (503), o app passa automaticamente para o próximo,
+    # multiplicando a capacidade gratuita. gemini-3.7-flash é o principal.
+    NOMES_MODELOS = [
+        "gemini-3.7-flash",
+        "gemini-3.5-flash",
+        "gemini-3.1-flash-lite",
+        "gemini-flash-lite-latest",
+    ]
+    modelos = [
+        ChatGoogleGenerativeAI(model=nome).with_retry(
+            retry_if_exception_type=(GoogleAPIError,),  # retenta só em 503 temporário
+            wait_exponential_jitter=True,
+            stop_after_attempt=2,
+        )
+        for nome in NOMES_MODELOS
+    ]
+    # o primeiro é o principal; os demais são fallbacks acionados em qualquer falha
+    llm = modelos[0].with_fallbacks(modelos[1:])
 
     # junta o conteúdo dos blocos recuperados em um único texto de contexto
     def formatar_docs(docs):
